@@ -6,6 +6,12 @@ require __DIR__ . '../../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
+
+
+
+$command = "php /caminho/para/seu/script.php";
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   try {
     $resend = Resend::client($_ENV['API_KEY']);
@@ -40,5 +46,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ]);
   }
 } else {
-  echo json_encode(['message' => 'Este script deve ser executado em uma requisicao HTTP POST.']);
+  echo json_encode(['message' => 'Este script deve ser executado em uma requisição HTTP POST.']);
 }
