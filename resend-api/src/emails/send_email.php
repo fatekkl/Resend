@@ -40,5 +40,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ]);
   }
 } else {
-  echo json_encode(['message' => 'Este script deve ser executado em uma requisição HTTP POST.']);
+  echo json_encode(['message' => 'Este script deve ser executado em uma requisicao HTTP POST.']);
 }
