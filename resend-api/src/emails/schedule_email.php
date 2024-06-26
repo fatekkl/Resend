@@ -3,37 +3,53 @@
 // Use Composer autoloader for PSR-4 compliance
 require __DIR__ . '../../vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
-
-
-
-$command = 'curl -X POST http://apiemail.onvi.com.br/send '
-    . '-H "Content-Type: application/json" '
-    . '-d \'{
-   "from": "contato@onvi.com.br",
-   "to": "mathtml.1105@gmail.com",
-   "subject": "Teste",
-   "text": "testestes"
- }\'';
-$interval = "* * * * *";
-
-// RESOLVER O POR QUE ESSE COMANDO EM ESPECIFICO N ESTA FUNCIONANDO!!!!
-
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $filePath = __DIR__ . '/emails_to_send.json';
 
-    $resend = Resend::client($_ENV['API_KEY']);
-    $data = json_decode(file_get_contents('php://input'), true);
+    // Obter os dados JSON da requisição
+    $jsonData = json_decode(file_get_contents('php://input'), true);
 
-    $from = $data['from'];
-    $to = $data['to'];
-    $subject = $data['subject'];
-    $html = $data['text'];
+    if (!$jsonData) {
+        http_response_code(400);
+        die('Erro ao obter os dados JSON da requisição.');
+    }
 
+    $from = $jsonData['from'];
+    $to = $jsonData['to'];
+    $subject = $jsonData['subject'];
+    $html = $jsonData['text'];
+    $at = strtotime($jsonData['at']);
 
-    exec('(crontab -l ; echo "' . $interval . ' ' . $command . '") | sort - | uniq - | crontab -');
-} else {
-    echo json_encode(['message' => 'Este script deve ser executado em uma requisição HTTP POST.']);
+    $newEmail = [
+        'from' => $from,
+        'to' => $to,
+        'subject' => $subject,
+        'html' => $html,
+        'at' => $at,
+    ];
+
+    // Obter os emails existentes do arquivo JSON
+    $existingEmails = json_decode(file_get_contents($filePath), true);
+    if (!$existingEmails) {
+        $existingEmails = [];
+    }
+
+    // Adicionar o novo email ao array existente
+    $existingEmails[] = $newEmail;
+
+    // Codificar de volta para JSON e salvar no arquivo
+    $jsonData = json_encode($existingEmails, JSON_PRETTY_PRINT);
+    if (file_put_contents($filePath, $jsonData) === false) {
+        $error = error_get_last();
+        http_response_code(500);
+        die('Erro ao salvar os dados no arquivo: ' . $error['message']);
+    }
+    
+
+    echo "Email Agendado!!!";
 }

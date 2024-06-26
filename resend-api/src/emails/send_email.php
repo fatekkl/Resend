@@ -8,21 +8,16 @@ $dotenv->load();
 
 
 
-
-$command = "php /caminho/para/seu/script.php";
-
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   try {
     $resend = Resend::client($_ENV['API_KEY']);
 
     $data = json_decode(file_get_contents('php://input'), true);
 
-    // Verifica se os campos obrigatórios estão presentes e são strings
     if (
-      !isset($data['from']) || !is_string($data['from']) ||
-      !isset($data['to']) || !is_string($data['to']) ||
-      !isset($data['subject']) || !is_string($data['subject'])
+      !isset($data['from']) || 
+      !isset($data['to']) || 
+      !isset($data['subject'])
     ) {
       throw new InvalidArgumentException('Dados faltando ou inválidos');
     }
@@ -35,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'from' => $data['from'],
       'to' => $data['to'],
       'subject' => $data['subject'],
-      'html' => $text,
+      'html' => $data['text'],
     ]);
 
     echo json_encode(['message' => "Email enviado!!"]);
