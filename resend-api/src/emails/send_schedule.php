@@ -37,10 +37,13 @@ if (file_exists($arquivo_json) && is_readable($arquivo_json)) {
             $data_envio = strtotime($email['at']);
         }
 
-        if ($data_envio <= $agora) {
-            echo 'passou na condição';
-            enviarEmail($email);
-        }
+
+        // arrumar condicional embaixo e remover da lista depois de enviar
+
+        // if ($data_envio <= $agora) {
+        //     echo 'passou na condição';
+        //     enviarEmail($email);
+        // }
 
     }
 
