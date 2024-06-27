@@ -8,8 +8,8 @@ $dotenv->load();
 
 date_default_timezone_set('America/Sao_Paulo');
 
-
-function enviarEmail($data) {
+function enviarEmail($data)
+{
     try {
         $resend = Resend::client($_ENV['API_KEY']);
 
@@ -20,11 +20,11 @@ function enviarEmail($data) {
             'html' => $data['html'],
         ]);
 
-        // Remover o email da lista após o envio bem-sucedido (opcional)
-        // Remova esta parte se não desejar remover automaticamente
-        // unset($emails_agendados[array_search($data, $emails_agendados)]);
-
         echo "Email enviado para: {$data['to']} - Assunto: {$data['subject']}\n";
+
+
+
+        sleep(0.5);
         return true;
     } catch (Exception $e) {
         echo "Erro ao enviar email: {$e->getMessage()}\n";
@@ -32,31 +32,32 @@ function enviarEmail($data) {
     }
 }
 
-$arquivo_json = 'emails_to_send.json';
+$arquivo_json = '/var/www/html/resend-api/src/emails_to_send.json';
 
 if (file_exists($arquivo_json) && is_readable($arquivo_json)) {
     $dados_emails = file_get_contents($arquivo_json);
     $emails_agendados = json_decode($dados_emails, true);
 
     if ($emails_agendados !== null) {
-        $agora = time();
-
-        echo "Percorrendo a lista de emails agendados...\n";
         foreach ($emails_agendados as $key => $email) {
-            $data_envio = strtotime($email['at']);
+            $data_atual = new DateTime();
 
-            echo "$data_envio";
+            // Data específica no formato "YYYY-MM-DD HH:MM:SS"
+            $data_especifica = new DateTime($email['at']);
 
-            if ($data_envio <= $agora) {
-                enviarEmail($email);
+            // Comparação das datas
+            if ($data_atual < $data_especifica) {
+                echo $email['subject'] . " ainda não deu a hora!!\n";
+                continue; // Pula para a próxima iteração
+            }
 
-                // Remover o email da lista após o envio bem-sucedido
+            if (enviarEmail($email)) {
                 unset($emails_agendados[$key]);
-
-                // Atualizar o arquivo JSON sem o email enviado
-                file_put_contents($arquivo_json, json_encode($emails_agendados, JSON_PRETTY_PRINT));
             }
         }
+
+        // Salva o conteúdo atualizado de volta no arquivo JSON
+        file_put_contents($arquivo_json, json_encode(array_values($emails_agendados), JSON_PRETTY_PRINT));
     } else {
         echo "Erro ao decodificar o arquivo JSON.\n";
     }

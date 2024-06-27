@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $to = $jsonData['to'];
     $subject = $jsonData['subject'];
     $html = $jsonData['text'];
-    $at = strtotime($jsonData['at']);
+    $at =  $jsonData['at'];
 
     $newEmail = [
         'from' => $from,
